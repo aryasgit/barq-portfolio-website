@@ -19,7 +19,7 @@ export function Nav() {
         <span className="font-display text-lg font-semibold tracking-tight text-text">
           BARQ
         </span>
-        <span className="h-1.5 w-1.5 rounded-full bg-cyan shadow-[0_0_10px_var(--color-cyan)]" />
+        <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_var(--glow)]" />
       </a>
 
       <nav className="hidden gap-8 font-mono text-[11px] uppercase tracking-[0.2em] text-text-dim md:flex">

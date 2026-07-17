@@ -30,14 +30,75 @@
 }
 
 /* ------------------------------------------------------------------ */
+/*  Semantic theme tokens — overridden per environment at runtime.     */
+/*  Registered as <color> so a transition on :root interpolates them,  */
+/*  which means the ENTIRE interface animates when the env changes.    */
+/* ------------------------------------------------------------------ */
+@property --bg { syntax: "<color>"; inherits: true; initial-value: #060607; }
+@property --surface { syntax: "<color>"; inherits: true; initial-value: #0e0f12; }
+@property --surface-el { syntax: "<color>"; inherits: true; initial-value: #16181c; }
+@property --overlay { syntax: "<color>"; inherits: true; initial-value: rgba(8,8,10,0.82); }
+@property --text { syntax: "<color>"; inherits: true; initial-value: #f6f6f6; }
+@property --text-2 { syntax: "<color>"; inherits: true; initial-value: #8d8d96; }
+@property --text-muted { syntax: "<color>"; inherits: true; initial-value: #55555c; }
+@property --accent { syntax: "<color>"; inherits: true; initial-value: #00f0ff; }
+@property --success { syntax: "<color>"; inherits: true; initial-value: #00e784; }
+@property --warning { syntax: "<color>"; inherits: true; initial-value: #ffb020; }
+@property --selection { syntax: "<color>"; inherits: true; initial-value: #00f0ff; }
+@property --hover { syntax: "<color>"; inherits: true; initial-value: rgba(255,255,255,0.06); }
+@property --active { syntax: "<color>"; inherits: true; initial-value: rgba(255,255,255,0.10); }
+@property --border { syntax: "<color>"; inherits: true; initial-value: rgba(255,255,255,0.08); }
+@property --border-strong { syntax: "<color>"; inherits: true; initial-value: rgba(255,255,255,0.16); }
+@property --glow { syntax: "<color>"; inherits: true; initial-value: rgba(0,240,255,0.5); }
+@property --shadow { syntax: "<color>"; inherits: true; initial-value: rgba(0,0,0,0.6); }
+
+:root {
+  transition:
+    --bg 0.85s var(--ease-out-expo),
+    --surface 0.85s var(--ease-out-expo),
+    --surface-el 0.85s var(--ease-out-expo),
+    --overlay 0.85s var(--ease-out-expo),
+    --text 0.85s var(--ease-out-expo),
+    --text-2 0.85s var(--ease-out-expo),
+    --text-muted 0.85s var(--ease-out-expo),
+    --accent 0.85s var(--ease-out-expo),
+    --success 0.85s var(--ease-out-expo),
+    --warning 0.85s var(--ease-out-expo),
+    --selection 0.85s var(--ease-out-expo),
+    --hover 0.85s var(--ease-out-expo),
+    --active 0.85s var(--ease-out-expo),
+    --border 0.85s var(--ease-out-expo),
+    --border-strong 0.85s var(--ease-out-expo),
+    --glow 0.85s var(--ease-out-expo),
+    --shadow 0.85s var(--ease-out-expo);
+}
+
+/* Remap the structural Tailwind palette onto the animated semantic tokens, so
+   every existing bg-bg / text-text-dim / border-line utility inherits the
+   environment and transitions with it. The cyan/emerald/pink accent triad is
+   left fixed as brand identity for data-viz. */
+:root {
+  --color-void: var(--bg);
+  --color-bg: var(--bg);
+  --color-bg-secondary: var(--surface);
+  --color-surface: var(--surface-el);
+  --color-surface-2: var(--surface-el);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-text-dim: var(--text-2);
+  --color-text-faint: var(--text-muted);
+}
+
+/* ------------------------------------------------------------------ */
 /*  Base                                                              */
 /* ------------------------------------------------------------------ */
 * {
-  border-color: var(--color-line);
+  border-color: var(--border);
 }
 
 html {
-  background: var(--color-bg);
+  background: var(--bg);
   color-scheme: dark;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -56,8 +117,8 @@ html.lenis body {
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--font-sans), system-ui, sans-serif;
   overflow-x: clip;
   cursor: none;
@@ -70,8 +131,25 @@ body {
 }
 
 ::selection {
-  background: var(--color-cyan);
-  color: #001417;
+  background: var(--selection);
+  color: var(--bg);
+}
+
+/* Global themed scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 6px;
+  border: 3px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
 }
 
 /* Typographic rhythm */

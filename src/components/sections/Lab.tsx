@@ -100,7 +100,7 @@ export function Lab() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ margin: "-10% 0px" }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="pointer-events-auto w-full max-w-3xl rounded-2xl border border-line bg-[#0b0b0d]/80 p-4 backdrop-blur-xl md:p-5"
+          className="pointer-events-auto w-full max-w-3xl rounded-2xl border border-line bg-[var(--overlay)] p-4 shadow-[0_20px_60px_var(--shadow)] backdrop-blur-xl md:p-5"
         >
           <div className="grid gap-4 md:grid-cols-2">
             {/* Poses */}
@@ -208,7 +208,7 @@ export function Lab() {
                 className={cn(
                   "rounded-md border px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] transition-colors",
                   env === e.id
-                    ? "border-cyan/60 bg-white/[0.04] text-cyan"
+                    ? "border-[var(--accent)] bg-[var(--active)] text-[var(--accent)]"
                     : "border-line text-text-dim hover:text-text",
                 )}
               >

@@ -104,7 +104,7 @@ function SpecCard() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 24 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="pointer-events-none absolute right-6 top-1/2 hidden w-72 -translate-y-1/2 rounded-2xl border border-line bg-[#0b0b0d]/85 p-6 backdrop-blur-xl md:block md:right-12"
+          className="pointer-events-none absolute right-6 top-1/2 hidden w-72 -translate-y-1/2 rounded-2xl border border-line bg-[var(--overlay)] p-6 shadow-[0_20px_60px_var(--shadow)] backdrop-blur-xl md:block md:right-12"
         >
           <p
             className={cn(
@@ -120,7 +120,7 @@ function SpecCard() {
           <p className="mt-3 text-xs leading-relaxed text-text-dim">{part.description}</p>
           <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line">
             {part.specs.map((s) => (
-              <div key={s.label} className="bg-[#0b0b0d] p-3">
+              <div key={s.label} className="bg-[var(--surface)] p-3">
                 <dt className="font-mono text-[9px] uppercase tracking-widest text-text-faint">
                   {s.label}
                 </dt>

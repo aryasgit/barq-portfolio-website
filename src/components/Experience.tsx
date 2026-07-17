@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { Nav } from "@/components/layout/Nav";
 import { AudioController } from "@/components/layout/AudioController";
+import { ThemeController } from "@/components/layout/ThemeController";
 import { Cursor } from "@/components/ui/Cursor";
 import { Grain } from "@/components/ui/Grain";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
@@ -34,6 +35,7 @@ export function Experience() {
         <Scene />
       </div>
 
+      <ThemeController />
       <Grain />
       <Cursor />
       <ScrollProgress />
