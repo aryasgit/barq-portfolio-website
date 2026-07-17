@@ -85,6 +85,30 @@ export const POSES: PoseDef[] = [
     },
     bodyY: -0.02,
   },
+  {
+    id: "walk-ready",
+    label: "Walk Ready",
+    pose: symmetricPose(0, 0.78, -1.2),
+    bodyY: -0.012,
+  },
+  {
+    id: "run-ready",
+    label: "Run Ready",
+    pose: symmetricPose(0, 0.95, -1.38),
+    bodyY: -0.03,
+  },
+  {
+    id: "calibration",
+    label: "Calibration",
+    // All joints neutral — legs extended for a zeroing / self-check stance.
+    pose: symmetricPose(0, 0, 0),
+  },
+  {
+    id: "power-off",
+    label: "Power Off",
+    pose: symmetricPose(0, 1.5, -1.55),
+    bodyY: -0.08,
+  },
 ];
 
 export const POSE_MAP = Object.fromEntries(POSES.map((p) => [p.id, p]));

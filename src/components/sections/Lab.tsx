@@ -15,6 +15,10 @@ const POSE_CONTROLS: { id: string; label: string }[] = [
   { id: "stretch", label: "Stretch" },
   { id: "bow", label: "Bow" },
   { id: "lie", label: "Lie Down" },
+  { id: "walk-ready", label: "Walk Ready" },
+  { id: "run-ready", label: "Run Ready" },
+  { id: "calibration", label: "Calibration" },
+  { id: "power-off", label: "Power Off" },
 ];
 
 const motionKey = (m: MotionMode) =>
