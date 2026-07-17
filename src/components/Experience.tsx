@@ -8,6 +8,7 @@ import { Grain } from "@/components/ui/Grain";
 import { Boot } from "@/components/sections/Boot";
 import { Hero } from "@/components/sections/Hero";
 import { StorySection } from "@/components/sections/StorySection";
+import { Exploded } from "@/components/sections/Exploded";
 import { Blueprint } from "@/components/sections/Blueprint";
 import { Lab } from "@/components/sections/Lab";
 import { Performance } from "@/components/sections/Performance";
@@ -88,6 +89,7 @@ export function Experience() {
           ]}
         />
 
+        <Exploded />
         <Blueprint />
         <Lab />
         <Performance />

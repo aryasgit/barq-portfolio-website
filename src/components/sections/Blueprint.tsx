@@ -53,7 +53,7 @@ export function Blueprint() {
     >
       <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 md:grid-cols-2">
         <SectionHeading
-          index="04"
+          index="05"
           eyebrow="Technical"
           accent="cyan"
           title={

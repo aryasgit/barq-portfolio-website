@@ -34,7 +34,7 @@ export function Software() {
       className="relative z-10 w-full bg-bg px-6 py-28 md:px-12"
     >
       <SectionHeading
-        index="08"
+        index="09"
         eyebrow="Software Stack"
         accent="pink"
         title={<>From pixels to torque.</>}

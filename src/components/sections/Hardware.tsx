@@ -20,7 +20,7 @@ export function Hardware() {
       className="relative z-10 min-h-screen w-full bg-bg px-6 py-28 md:px-12"
     >
       <SectionHeading
-        index="07"
+        index="08"
         eyebrow="Hardware"
         accent="cyan"
         title={<>Every subsystem, engineered.</>}

@@ -72,7 +72,7 @@ export function Lab() {
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="font-mono text-xs uppercase tracking-[0.4em] text-emerald"
         >
-          05 · Robot Lab
+          06 · Robot Lab
         </motion.p>
         <motion.h2
           initial={{ opacity: 0, y: 24 }}

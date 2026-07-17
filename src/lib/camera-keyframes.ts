@@ -18,8 +18,8 @@ export const CAM_KEYS: CamKey[] = [
   { pos: [0.34, 0.2, 0.42], target: [0.12, 0.12, 0.06], fov: 30 },
   // 3 · Chassis / electronics — top-down-ish close
   { pos: [0.16, 0.5, 0.34], target: [0, 0.16, 0], fov: 32 },
-  // 4 · Exploded teardown — pulled back, centered
-  { pos: [0.05, 0.28, 1.05], target: [0, 0.14, 0], fov: 40 },
+  // 4 · Exploded teardown — pulled back and raised to hold the spread assembly
+  { pos: [0.1, 0.42, 1.5], target: [0, 0.16, 0], fov: 40 },
   // 5 · Performance / hardware — hero-ish wide again
   { pos: [-0.7, 0.3, 0.7], target: [0, 0.16, 0], fov: 38 },
 ];

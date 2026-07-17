@@ -12,6 +12,7 @@ import { Ground } from "./Ground";
 import { Lighting } from "./Lighting";
 import { Particles } from "./Particles";
 import { Robot } from "./Robot";
+import { Teardown3D } from "./Teardown3D";
 import { useApp } from "@/lib/store";
 
 function LabControls() {
@@ -72,6 +73,7 @@ export function Scene() {
         <Lighting />
         <EnvController />
         <Robot />
+        <Teardown3D />
         <Ground />
         <Particles />
         <CameraRig />

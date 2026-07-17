@@ -14,7 +14,7 @@ export function Performance() {
       className="relative z-10 w-full bg-bg-secondary px-6 py-28 md:px-12"
     >
       <SectionHeading
-        index="06"
+        index="07"
         eyebrow="Performance"
         accent="emerald"
         title={<>Numbers that hold under load.</>}
