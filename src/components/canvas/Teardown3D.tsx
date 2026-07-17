@@ -22,6 +22,16 @@ interface Tracked {
 }
 
 /**
+ * A component type highlights every instance of it — hovering "coxa" lights all
+ * four legs, not just the front-left. Chassis is the single base link.
+ */
+function linkMatchesPart(partId: string | undefined, linkName: string): boolean {
+  if (!partId) return false;
+  if (partId === "chassis") return linkName === "base_link";
+  return linkName.endsWith(`_${partId}_link`);
+}
+
+/**
  * The teardown driver. Captures each leg link's rest transform once, then eases
  * every link outward along its leg axis proportional to the store's `exploded`
  * value — a reversible, spring-damped explosion. Hovered parts glow.
@@ -117,13 +127,14 @@ export function Teardown3D() {
       t.link.position.copy(t.rest).addScaledVector(t.offsetDir, e * t.dist);
 
       const key = t.link.name;
-      const want = part && t.link.name === part.link ? 1 : 0;
+      const want = linkMatchesPart(part?.id, t.link.name) ? 1 : 0;
       glow.current[key] = damp(glow.current[key] ?? 0, want, 8, dt);
       const g = glow.current[key];
       if (g > 0.001 || want > 0) {
         for (const m of t.mats) {
-          m.emissive.set(glowColor).multiplyScalar(g * 0.9);
-          if (m.emissiveIntensity !== undefined) m.emissiveIntensity = 1;
+          // Restrained glow rather than a flat flood.
+          m.emissive.set(glowColor);
+          if (m.emissiveIntensity !== undefined) m.emissiveIntensity = g * 0.5;
         }
       }
     }

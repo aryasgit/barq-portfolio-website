@@ -31,6 +31,7 @@ export function Robot({ onReady }: RobotProps) {
   const { robot, progress } = useUrdf();
   const driver = useRef<RobotDriver | null>(null);
   const yaw = useRef(0);
+  const spin = useRef(0);
 
   useEffect(() => {
     setProgress(progress);
@@ -62,7 +63,7 @@ export function Robot({ onReady }: RobotProps) {
   useFrame((state, delta) => {
     if (!driver.current || !outer.current) return;
     const dt = Math.min(delta, 0.05);
-    const { motion, gaitSpeed, labActive } = useApp.getState();
+    const { motion, gaitSpeed, labActive, exploded } = useApp.getState();
     const elapsed = performance.now() / 1000;
     driver.current.update(dt, motion, gaitSpeed, elapsed);
     outer.current.position.y = driver.current.currentBodyY;
@@ -70,7 +71,9 @@ export function Robot({ onReady }: RobotProps) {
     // Micro pointer acknowledgement — a restrained body yaw (disabled in lab).
     const wantYaw = labActive ? 0 : state.pointer.x * 0.08;
     yaw.current = damp(yaw.current, wantYaw, 2.5, dt);
-    outer.current.rotation.y = yaw.current;
+    // During the teardown, add a slow turntable rotation on top.
+    spin.current += exploded > 0.35 ? dt * 0.28 * exploded : 0;
+    outer.current.rotation.y = yaw.current + spin.current;
   });
 
   const model = useMemo(() => (robot ? <primitive object={robot} /> : null), [robot]);
