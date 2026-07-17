@@ -1,27 +1,42 @@
-/** Camera choreography — one keyframe per narrative section. */
-export interface CamKey {
-  pos: [number, number, number];
-  target: [number, number, number];
-  fov: number;
-}
+import { Vector3 } from "three";
 
 /**
- * Section indices map 1:1 to the narrative sections rendered in the page.
- * The rig damps toward the active section's pose; scroll adds micro parallax.
+ * A cinematic framing directive. The camera orbits the robot's bounding sphere
+ * at (azimuth, elevation) and pulls to whatever distance frames the sphere with
+ * `margin` headroom — so the robot is ALWAYS in shot regardless of pose or how
+ * far the teardown has exploded.
  */
-export const CAM_KEYS: CamKey[] = [
-  // 0 · Hero — wide, low, front three-quarter
-  { pos: [0.62, 0.34, 0.72], target: [0, 0.16, 0], fov: 38 },
-  // 1 · Kinematics — profile, mid height
-  { pos: [0.95, 0.22, 0.05], target: [0, 0.14, 0], fov: 34 },
-  // 2 · Actuation — macro on a front leg joint
-  { pos: [0.34, 0.2, 0.42], target: [0.12, 0.12, 0.06], fov: 30 },
-  // 3 · Chassis / electronics — top-down-ish close
-  { pos: [0.16, 0.5, 0.34], target: [0, 0.16, 0], fov: 32 },
-  // 4 · Exploded teardown — pulled back and raised to hold the spread assembly
-  { pos: [0.1, 0.42, 1.5], target: [0, 0.16, 0], fov: 40 },
-  // 5 · Performance / hardware — hero-ish wide again
-  { pos: [-0.7, 0.3, 0.7], target: [0, 0.16, 0], fov: 38 },
+export interface CamFrame {
+  /** Horizontal orbit angle (radians, 0 = front). */
+  azimuth: number;
+  /** Vertical orbit angle (radians above the horizon). */
+  elevation: number;
+  /** Field of view in degrees. */
+  fov: number;
+  /** Framing headroom: 1.0 tight, >1 wider. */
+  margin: number;
+  /** LookAt offset from the bounding-sphere centre, in world units. */
+  targetOffset: [number, number, number];
+}
+
+/** One frame per narrative section index (see useSection). */
+export const CAM_FRAMES: CamFrame[] = [
+  // 0 · Hero — wide, dramatic front three-quarter, slightly low
+  { azimuth: 0.62, elevation: 0.12, fov: 34, margin: 1.5, targetOffset: [0, 0.0, 0] },
+  // 1 · Kinematics — near profile
+  { azimuth: 1.32, elevation: 0.08, fov: 32, margin: 1.32, targetOffset: [0, 0.0, 0] },
+  // 2 · Actuation — three-quarter close-up on the hip
+  { azimuth: 0.5, elevation: 0.22, fov: 30, margin: 1.02, targetOffset: [0.04, 0.02, 0] },
+  // 3 · Chassis — elevated, looking down the spine
+  { azimuth: 0.24, elevation: 0.62, fov: 32, margin: 1.15, targetOffset: [0, 0.01, 0] },
+  // 4 · Exploded teardown — centred, subtly wider FOV, close framing
+  { azimuth: 0.4, elevation: 0.16, fov: 40, margin: 1.12, targetOffset: [0, 0.02, 0] },
+  // 5 · Wide orbit — opposite three-quarter
+  { azimuth: -0.7, elevation: 0.2, fov: 36, margin: 1.5, targetOffset: [0, 0.0, 0] },
 ];
 
-export const HERO_KEY = CAM_KEYS[0];
+/** Direction (target → camera) for an orbit angle pair. */
+export function orbitDir(azimuth: number, elevation: number, out = new Vector3()) {
+  const ce = Math.cos(elevation);
+  return out.set(ce * Math.sin(azimuth), Math.sin(elevation), ce * Math.cos(azimuth));
+}

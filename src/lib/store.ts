@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import type { Group } from "three";
 import type { URDFRobotLike } from "@/types/robot";
 
 export type EnvId =
@@ -27,6 +28,9 @@ interface AppState {
   /* The live robot instance, published once fully loaded. */
   robot: URDFRobotLike | null;
   setRobot: (r: URDFRobotLike | null) => void;
+  /* The grounded/centred group wrapping the robot — the camera frames this. */
+  robotGroup: Group | null;
+  setRobotGroup: (g: Group | null) => void;
 
   /* Boot / intro */
   booted: boolean;
@@ -68,6 +72,8 @@ export const useApp = create<AppState>((set) => ({
 
   robot: null,
   setRobot: (r) => set({ robot: r }),
+  robotGroup: null,
+  setRobotGroup: (g) => set({ robotGroup: g }),
 
   booted: false,
   setBooted: (b) => set({ booted: b }),

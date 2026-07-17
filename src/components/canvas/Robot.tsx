@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Box3, Group } from "three";
+import { Box3, Group, Vector3 } from "three";
 import { useUrdf } from "@/hooks/useUrdf";
 import { RobotDriver } from "@/lib/robot-driver";
 import { useApp } from "@/lib/store";
+import { damp } from "@/lib/utils";
 import type { URDFRobotLike } from "@/types/robot";
 
 interface RobotProps {
@@ -13,55 +14,68 @@ interface RobotProps {
 }
 
 /**
- * The living robot. Loads the URDF, grounds it so the feet rest at y=0, then
- * drives idle/pose/gait motion every frame via {@link RobotDriver}.
+ * The living robot. Loads the URDF, normalises its origin so the centre of mass
+ * sits on the world Y axis with the feet at y=0, then drives idle/pose/gait
+ * motion every frame via {@link RobotDriver}. Subtly yaws toward the pointer so
+ * the robot always acknowledges the viewer.
  */
 export function Robot({ onReady }: RobotProps) {
   const outer = useRef<Group>(null);
+  const inner = useRef<Group>(null);
   const setProgress = useApp((s) => s.setProgress);
   const setReady = useApp((s) => s.setReady);
   const setRobot = useApp((s) => s.setRobot);
+  const setRobotGroup = useApp((s) => s.setRobotGroup);
 
   const { robot, progress } = useUrdf();
-  const dropY = useRef(0);
   const driver = useRef<RobotDriver | null>(null);
+  const yaw = useRef(0);
 
   useEffect(() => {
     setProgress(progress);
   }, [progress, setProgress]);
 
   useEffect(() => {
-    if (!robot || !outer.current) return;
-    // Ground the robot: measure the assembled bounds and drop so feet touch 0.
+    if (!robot || !outer.current || !inner.current) return;
+    // Measure the assembled robot and normalise: centre X/Z on the world axis,
+    // rest the feet exactly on y=0. Everything downstream frames this origin.
     const box = new Box3().setFromObject(outer.current);
-    const min = box.min.y;
-    dropY.current = -min;
-    outer.current.position.y = -min;
+    const center = box.getCenter(new Vector3());
+    inner.current.position.set(-center.x, -box.min.y, -center.z);
 
-    driver.current = new RobotDriver(robot, -min);
+    driver.current = new RobotDriver(robot, 0);
     setRobot(robot);
+    setRobotGroup(outer.current);
     setReady(true);
     onReady?.(robot);
-  }, [robot, onReady, setReady, setRobot]);
 
-  useFrame((_, delta) => {
+    return () => {
+      setRobotGroup(null);
+    };
+  }, [robot, onReady, setReady, setRobot, setRobotGroup]);
+
+  useFrame((state, delta) => {
     if (!driver.current || !outer.current) return;
     const dt = Math.min(delta, 0.05);
-    const { motion, gaitSpeed } = useApp.getState();
+    const { motion, gaitSpeed, labActive } = useApp.getState();
     const elapsed = performance.now() / 1000;
     driver.current.update(dt, motion, gaitSpeed, elapsed);
-    outer.current.position.y = dropY.current + driver.current.currentBodyY;
+    outer.current.position.y = driver.current.currentBodyY;
+
+    // Micro pointer acknowledgement — a restrained body yaw (disabled in lab).
+    const wantYaw = labActive ? 0 : state.pointer.x * 0.08;
+    yaw.current = damp(yaw.current, wantYaw, 2.5, dt);
+    outer.current.rotation.y = yaw.current;
   });
 
-  const rotated = useMemo(() => {
-    if (!robot) return null;
-    return <primitive object={robot} />;
-  }, [robot]);
+  const model = useMemo(() => (robot ? <primitive object={robot} /> : null), [robot]);
 
   return (
     <group ref={outer}>
       {/* URDF is authored Z-up; rotate into the viewer's Y-up frame. */}
-      <group rotation={[-Math.PI / 2, 0, 0]}>{rotated}</group>
+      <group ref={inner} rotation={[-Math.PI / 2, 0, 0]}>
+        {model}
+      </group>
     </group>
   );
 }

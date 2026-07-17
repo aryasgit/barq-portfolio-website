@@ -25,8 +25,8 @@ function LabControls() {
     const id = requestAnimationFrame(() => {
       const c = controls.current;
       if (!c) return;
-      c.object.position.set(0.62, 0.26, 0.72);
-      c.target.set(0, 0.16, 0);
+      c.object.position.set(0.6, 0.24, 0.7);
+      c.target.set(0, 0.13, 0);
       c.update();
     });
     return () => cancelAnimationFrame(id);
