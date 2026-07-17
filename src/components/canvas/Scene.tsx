@@ -20,13 +20,21 @@ function LabControls() {
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
 
   // Frame the whole robot each time the lab opens, resetting the orbit state.
+  // Portrait/touch viewports pull further back and lift the robot so it clears
+  // the bottom console; a lower target keeps the subject in the upper frame.
   useEffect(() => {
     if (!labActive) return;
     const id = requestAnimationFrame(() => {
       const c = controls.current;
       if (!c) return;
-      c.object.position.set(0.6, 0.24, 0.7);
-      c.target.set(0, 0.13, 0);
+      const portrait = window.innerHeight > window.innerWidth;
+      if (portrait) {
+        c.object.position.set(0.34, 0.26, 1.02);
+        c.target.set(0, 0.09, 0);
+      } else {
+        c.object.position.set(0.66, 0.3, 0.82);
+        c.target.set(0, 0.1, 0);
+      }
       c.update();
     });
     return () => cancelAnimationFrame(id);
@@ -37,10 +45,10 @@ function LabControls() {
     <OrbitControls
       ref={controls}
       makeDefault
-      target={[0, 0.12, 0]}
+      target={[0, 0.1, 0]}
       enablePan={false}
       minDistance={0.4}
-      maxDistance={2.2}
+      maxDistance={3}
       minPolarAngle={0.2}
       maxPolarAngle={Math.PI / 2 - 0.05}
       enableDamping

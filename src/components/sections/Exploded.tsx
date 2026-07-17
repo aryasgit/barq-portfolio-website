@@ -58,10 +58,11 @@ export function Exploded() {
                   <div
                     key={part.id}
                     data-cursor
-                    onPointerEnter={() => setHovered(part.id)}
-                    onPointerLeave={() => setHovered(null)}
+                    onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(part.id)}
+                    onPointerLeave={(e) => e.pointerType === "mouse" && setHovered(null)}
+                    onClick={() => setHovered(active ? null : part.id)}
                     className={cn(
-                      "group relative flex items-center justify-between rounded-lg border px-4 py-3 transition-colors",
+                      "group relative flex items-center justify-between rounded-lg border px-4 py-3.5 transition-colors",
                       active ? cn(a.border, "bg-white/[0.03]") : "border-transparent hover:border-line",
                     )}
                   >
@@ -104,7 +105,7 @@ function SpecCard() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 24 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="pointer-events-none absolute right-6 top-1/2 hidden w-72 -translate-y-1/2 rounded-2xl border border-line bg-[var(--overlay)] p-6 shadow-[0_20px_60px_var(--shadow)] backdrop-blur-xl md:block md:right-12"
+          className="pointer-events-none fixed inset-x-3 bottom-3 z-30 rounded-2xl border border-line bg-[var(--overlay)] p-5 shadow-[0_20px_60px_var(--shadow)] backdrop-blur-xl md:absolute md:inset-x-auto md:bottom-auto md:right-12 md:top-1/2 md:w-72 md:-translate-y-1/2 md:p-6"
         >
           <p
             className={cn(
