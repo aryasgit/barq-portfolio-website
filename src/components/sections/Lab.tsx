@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { MagneticButton } from "@/components/ui/MagneticButton";
+import { PoseInfoPanel } from "./PoseInfoPanel";
 import { ENVIRONMENTS } from "@/lib/environments";
 import { GAITS } from "@/lib/robot-config";
 import { useApp, type MotionMode } from "@/lib/store";
@@ -10,15 +11,30 @@ import { cn } from "@/lib/utils";
 
 const POSE_CONTROLS: { id: string; label: string }[] = [
   { id: "idle", label: "Idle" },
+  { id: "neutral", label: "Neutral" },
   { id: "stand", label: "Stand" },
+  { id: "high-stand", label: "High Stand" },
+  { id: "low-crawl", label: "Low Crawl" },
   { id: "sit", label: "Sit" },
-  { id: "stretch", label: "Stretch" },
-  { id: "bow", label: "Bow" },
+  { id: "rest", label: "Rest" },
   { id: "lie", label: "Lie Down" },
-  { id: "walk-ready", label: "Walk Ready" },
-  { id: "run-ready", label: "Run Ready" },
-  { id: "calibration", label: "Calibration" },
   { id: "power-off", label: "Power Off" },
+  { id: "wake-up", label: "Wake Up" },
+  { id: "calibration", label: "Calibration" },
+  { id: "stretch", label: "Stretch" },
+  { id: "play-bow", label: "Play Bow" },
+  { id: "greeting", label: "Greeting" },
+  { id: "ready", label: "Ready" },
+  { id: "alert", label: "Alert" },
+  { id: "inspection", label: "Inspection" },
+  { id: "recovery", label: "Recovery" },
+  { id: "balance-test", label: "Balance Test" },
+];
+
+const READY_CONTROLS: { id: string; label: string }[] = [
+  { id: "walk-ready", label: "Walk" },
+  { id: "trot-ready", label: "Trot" },
+  { id: "run-ready", label: "Run" },
 ];
 
 const motionKey = (m: MotionMode) =>
@@ -67,6 +83,7 @@ export function Lab() {
       id="lab"
       className="pointer-events-none relative min-h-[130svh] w-full"
     >
+      <PoseInfoPanel />
       {/* Heading rides in at the top of the lab. */}
       <div className="pointer-events-none px-6 pt-24 md:px-12">
         <motion.p
@@ -102,29 +119,22 @@ export function Lab() {
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="pointer-events-auto w-full max-w-3xl rounded-2xl border border-line bg-[var(--overlay)] p-4 shadow-[0_20px_60px_var(--shadow)] backdrop-blur-xl md:p-5"
         >
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* Poses */}
-            <ControlGroup label="Pose">
-              {POSE_CONTROLS.map((p) => (
-                <MagneticButton
-                  key={p.id}
-                  accent="cyan"
-                  active={active === `pose:${p.id}`}
-                  onClick={() => setMotion({ kind: "pose", id: p.id })}
-                >
-                  {p.label}
-                </MagneticButton>
-              ))}
+          {/* Poses — full-width, wrapping */}
+          <ControlGroup label="Pose Library">
+            {POSE_CONTROLS.map((p) => (
               <MagneticButton
+                key={p.id}
                 accent="cyan"
-                active={false}
-                onClick={() => setMotion({ kind: "pose", id: "stand" })}
+                active={active === `pose:${p.id}`}
+                onClick={() => setMotion({ kind: "pose", id: p.id })}
               >
-                Recover
+                {p.label}
               </MagneticButton>
-            </ControlGroup>
+            ))}
+          </ControlGroup>
 
-            {/* Gaits + demos */}
+          {/* Locomotion + gait-ready stances + demos */}
+          <div className="mt-4 grid gap-4 border-t border-line pt-4 md:grid-cols-2">
             <ControlGroup label="Locomotion">
               {GAITS.map((g) => (
                 <MagneticButton
@@ -150,6 +160,19 @@ export function Lab() {
               >
                 Balance
               </MagneticButton>
+            </ControlGroup>
+
+            <ControlGroup label="Gait Ready">
+              {READY_CONTROLS.map((p) => (
+                <MagneticButton
+                  key={p.id}
+                  accent="cyan"
+                  active={active === `pose:${p.id}`}
+                  onClick={() => setMotion({ kind: "pose", id: p.id })}
+                >
+                  {p.label}
+                </MagneticButton>
+              ))}
             </ControlGroup>
           </div>
 

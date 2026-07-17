@@ -19,42 +19,123 @@ export const STAND_ANKLE = -1.1;
 const jointName = (leg: LegId, role: "hip" | "knee" | "ankle") =>
   `${leg}_${role}_joint`;
 
-/** Build a symmetric pose from per-role angles applied to every leg. */
-function symmetricPose(hip: number, knee: number, ankle: number): JointPose {
+/** Build a stance from per-role angles, with optional lateral hip splay. */
+function stance(
+  knee: number,
+  ankle: number,
+  opts: { hip?: number; splay?: number } = {},
+): JointPose {
   const pose: JointPose = {};
   for (const leg of LEGS) {
-    pose[jointName(leg, "hip")] = hip;
+    const side = leg.endsWith("L") ? 1 : -1;
+    pose[jointName(leg, "hip")] = (opts.hip ?? 0) + (opts.splay ?? 0) * side;
     pose[jointName(leg, "knee")] = knee;
     pose[jointName(leg, "ankle")] = ankle;
   }
   return pose;
 }
 
+const frontLower = (base: JointPose, knee: number, ankle: number): JointPose => ({
+  ...base,
+  FL_knee_joint: knee,
+  FR_knee_joint: knee,
+  FL_ankle_joint: ankle,
+  FR_ankle_joint: ankle,
+});
+
 /* ------------------------------------------------------------------ */
-/*  Static poses                                                      */
+/*  Pose library — each genuinely repositions the whole body           */
 /* ------------------------------------------------------------------ */
 export const POSES: PoseDef[] = [
-  { id: "stand", label: "Stand", pose: symmetricPose(0, STAND_KNEE, STAND_ANKLE) },
-  { id: "idle", label: "Idle", pose: symmetricPose(0, STAND_KNEE, STAND_ANKLE) },
+  {
+    id: "idle",
+    label: "Idle",
+    pose: stance(STAND_KNEE, STAND_ANKLE),
+    duration: 0.8,
+    info: { purpose: "Passive standby", stability: 92, energy: 18, terrain: "Flat", cog: "Centred", description: "Balanced quiet stance with live idle micro-corrections." },
+  },
+  {
+    id: "neutral",
+    label: "Neutral",
+    pose: stance(0.5, -0.9),
+    duration: 0.7,
+    info: { purpose: "Home reference", stability: 88, energy: 20, terrain: "Flat", cog: "Centred", description: "Mid-range reference posture between calibration and stand." },
+  },
+  {
+    id: "stand",
+    label: "Stand",
+    pose: stance(STAND_KNEE, STAND_ANKLE),
+    duration: 0.7,
+    info: { purpose: "Load-bearing stance", stability: 94, energy: 22, terrain: "Flat / mixed", cog: "Centred", description: "Nominal standing posture with feet under the hips." },
+  },
+  {
+    id: "high-stand",
+    label: "High Stand",
+    pose: stance(0.35, -0.72),
+    bodyY: 0.03,
+    duration: 0.9,
+    info: { purpose: "Extended reach / clearance", stability: 78, energy: 30, terrain: "Obstacles", cog: "Raised", description: "Legs extended to maximise ground clearance and sensor height." },
+  },
+  {
+    id: "low-crawl",
+    label: "Low Crawl",
+    pose: stance(1.2, -1.45, { splay: 0.28 }),
+    bodyY: -0.06,
+    duration: 1.0,
+    info: { purpose: "Low-profile traverse", stability: 90, energy: 34, terrain: "Confined", cog: "Lowered / wide", description: "Wide splayed stance dropping the chassis for low clearance." },
+  },
   {
     id: "sit",
     label: "Sit",
     pose: {
-      ...symmetricPose(0, STAND_KNEE, STAND_ANKLE),
+      ...stance(0.35, STAND_ANKLE),
       RL_knee_joint: 1.35,
       RR_knee_joint: 1.35,
       RL_ankle_joint: -1.5,
       RR_ankle_joint: -1.5,
-      FL_knee_joint: 0.35,
-      FR_knee_joint: 0.35,
     },
     bodyY: -0.03,
+    bodyPitch: -0.14,
+    duration: 1.1,
+    info: { purpose: "Rest / observe", stability: 96, energy: 12, terrain: "Flat", cog: "Rear-biased", description: "Rear legs folded, chassis pitched back onto the haunches." },
+  },
+  {
+    id: "rest",
+    label: "Rest",
+    pose: stance(1.1, -1.4),
+    bodyY: -0.05,
+    duration: 1.2,
+    info: { purpose: "Low-power hold", stability: 97, energy: 8, terrain: "Flat", cog: "Lowered", description: "Chassis lowered near the ground to shed actuator load." },
   },
   {
     id: "lie",
     label: "Lie Down",
-    pose: symmetricPose(0, 1.45, -1.55),
+    pose: stance(1.45, -1.55, { splay: 0.1 }),
     bodyY: -0.07,
+    duration: 1.3,
+    info: { purpose: "Full rest", stability: 99, energy: 5, terrain: "Flat", cog: "Ground", description: "Belly-down rest with all legs folded beneath the frame." },
+  },
+  {
+    id: "power-off",
+    label: "Power Off",
+    pose: stance(1.5, -1.55, { splay: 0.16 }),
+    bodyY: -0.085,
+    duration: 1.6,
+    info: { purpose: "Shutdown", stability: 100, energy: 0, terrain: "Flat", cog: "Ground", description: "Actuators relax to a safe collapsed rest before power-down." },
+  },
+  {
+    id: "wake-up",
+    label: "Wake Up",
+    pose: stance(0.55, -1.05),
+    duration: 1.4,
+    info: { purpose: "Boot to stance", stability: 84, energy: 26, terrain: "Flat", cog: "Rising", description: "Staged rise from rest to a light standing posture." },
+  },
+  {
+    id: "calibration",
+    label: "Calibration",
+    pose: stance(0, 0),
+    duration: 1.2,
+    info: { purpose: "Joint zeroing", stability: 70, energy: 24, terrain: "Rig", cog: "Raised", description: "All joints driven to zero for encoder zeroing and self-check." },
   },
   {
     id: "stretch",
@@ -72,42 +153,99 @@ export const POSES: PoseDef[] = [
       RR_ankle_joint: -1.2,
     },
     bodyY: -0.02,
+    bodyPitch: 0.12,
+    duration: 1.3,
+    info: { purpose: "Actuator conditioning", stability: 80, energy: 28, terrain: "Flat", cog: "Forward", description: "Front reach with rear compression to exercise the full range." },
   },
   {
-    id: "bow",
-    label: "Bow",
-    pose: {
-      ...symmetricPose(0, STAND_KNEE, STAND_ANKLE),
-      FL_knee_joint: 1.3,
-      FR_knee_joint: 1.3,
-      FL_ankle_joint: -1.3,
-      FR_ankle_joint: -1.3,
-    },
+    id: "play-bow",
+    label: "Play Bow",
+    pose: frontLower(stance(STAND_KNEE, STAND_ANKLE), 1.35, -1.4),
     bodyY: -0.02,
+    bodyPitch: 0.2,
+    duration: 1.0,
+    info: { purpose: "Expressive greeting", stability: 82, energy: 24, terrain: "Flat", cog: "Forward-low", description: "Front dropped, rear high — a playful bow gesture." },
+  },
+  {
+    id: "greeting",
+    label: "Greeting",
+    pose: frontLower(stance(STAND_KNEE, STAND_ANKLE), 1.1, -1.25),
+    bodyPitch: 0.12,
+    duration: 0.9,
+    info: { purpose: "Acknowledge operator", stability: 86, energy: 22, terrain: "Flat", cog: "Forward", description: "Gentle nose-down nod toward the operator." },
+  },
+  {
+    id: "ready",
+    label: "Ready",
+    pose: stance(0.72, -1.15),
+    bodyY: -0.008,
+    duration: 0.6,
+    info: { purpose: "Pre-motion crouch", stability: 90, energy: 26, terrain: "Mixed", cog: "Loaded", description: "Lightly crouched, springs loaded for immediate motion." },
+  },
+  {
+    id: "alert",
+    label: "Alert",
+    pose: {
+      ...stance(STAND_KNEE, STAND_ANKLE),
+      RL_knee_joint: 0.72,
+      RR_knee_joint: 0.72,
+    },
+    bodyPitch: -0.08,
+    duration: 0.6,
+    info: { purpose: "Heightened readiness", stability: 88, energy: 27, terrain: "Mixed", cog: "Rear-biased", description: "Weight shifted back, nose up, scanning posture." },
+  },
+  {
+    id: "inspection",
+    label: "Inspection",
+    pose: {
+      ...stance(0.7, -1.15),
+      FL_knee_joint: 0.95,
+      FL_ankle_joint: -1.25,
+    },
+    bodyRoll: 0.1,
+    bodyPitch: 0.1,
+    duration: 1.1,
+    info: { purpose: "Close visual survey", stability: 83, energy: 25, terrain: "Flat", cog: "Offset", description: "Chassis tips toward a point of interest for a close look." },
+  },
+  {
+    id: "recovery",
+    label: "Recovery",
+    pose: stance(0.8, -1.2, { splay: 0.18 }),
+    bodyY: -0.02,
+    duration: 1.2,
+    info: { purpose: "Self-right", stability: 76, energy: 40, terrain: "Any", cog: "Wide", description: "Wide brace used to push back up to a stable stance." },
+  },
+  {
+    id: "balance-test",
+    label: "Balance Test",
+    pose: stance(STAND_KNEE, STAND_ANKLE, { splay: 0.14 }),
+    bodyRoll: 0.08,
+    duration: 0.9,
+    info: { purpose: "Stability demo", stability: 74, energy: 32, terrain: "Uneven", cog: "Dynamic", description: "Braced wide stance holding a rolled chassis against tilt." },
   },
   {
     id: "walk-ready",
-    label: "Walk Ready",
-    pose: symmetricPose(0, 0.78, -1.2),
+    label: "Walking Ready",
+    pose: stance(0.78, -1.2),
     bodyY: -0.012,
+    duration: 0.6,
+    info: { purpose: "Gait entry — walk", stability: 89, energy: 30, terrain: "Flat", cog: "Loaded", description: "Neutral crouch tuned for the low-speed walking gait." },
+  },
+  {
+    id: "trot-ready",
+    label: "Trotting Ready",
+    pose: stance(0.85, -1.28),
+    bodyY: -0.02,
+    duration: 0.6,
+    info: { purpose: "Gait entry — trot", stability: 85, energy: 36, terrain: "Flat", cog: "Loaded", description: "Deeper crouch loading the diagonal pairs for trotting." },
   },
   {
     id: "run-ready",
-    label: "Run Ready",
-    pose: symmetricPose(0, 0.95, -1.38),
+    label: "Running Ready",
+    pose: stance(0.95, -1.38),
     bodyY: -0.03,
-  },
-  {
-    id: "calibration",
-    label: "Calibration",
-    // All joints neutral — legs extended for a zeroing / self-check stance.
-    pose: symmetricPose(0, 0, 0),
-  },
-  {
-    id: "power-off",
-    label: "Power Off",
-    pose: symmetricPose(0, 1.5, -1.55),
-    bodyY: -0.08,
+    duration: 0.6,
+    info: { purpose: "Gait entry — run", stability: 80, energy: 44, terrain: "Flat", cog: "Loaded-low", description: "Aggressive low crouch primed for the running gait." },
   },
 ];
 

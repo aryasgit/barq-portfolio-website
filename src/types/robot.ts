@@ -33,13 +33,32 @@ export interface GaitDef {
   push: number;
 }
 
-/** A static pose the robot can settle into. */
+/** Engineering metadata surfaced in the pose information panel. */
+export interface PoseInfo {
+  purpose: string;
+  /** Estimated static stability, 0–100. */
+  stability: number;
+  /** Estimated draw in watts. */
+  energy: number;
+  terrain: string;
+  /** Centre-of-gravity note, e.g. "centred" or "-14 mm". */
+  cog: string;
+  description: string;
+}
+
+/** A static pose the robot can settle into, with full transition + info data. */
 export interface PoseDef {
   id: string;
   label: string;
   pose: JointPose;
-  /** Optional base height offset applied to the whole body. */
+  /** Base body height offset (world units). */
   bodyY?: number;
+  /** Body pitch/roll in radians for stances that tilt the chassis. */
+  bodyPitch?: number;
+  bodyRoll?: number;
+  /** Transition duration in seconds (mechanical settle time). */
+  duration?: number;
+  info: PoseInfo;
 }
 
 /** A teardown component with engineering specifications. */
