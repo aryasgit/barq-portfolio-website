@@ -34,11 +34,11 @@ export function Software() {
       className="relative z-10 w-full bg-bg px-6 py-28 md:px-12"
     >
       <SectionHeading
-        index="09"
+        index="10"
         eyebrow="Software Stack"
         accent="pink"
-        title={<>From pixels to torque.</>}
-        sub="A layered autonomy stack: perception feeds decision, decision drives control, control commands the actuators — all on a deterministic runtime."
+        title={<>A modular stack.</>}
+        sub="Python services on ROS drive the control layer; a URDF describes the robot for both simulation and visualization. Each layer is independent, so kinematics, sensing and perception can evolve on their own."
       />
 
       <div className="relative mx-auto mt-16 grid max-w-3xl grid-cols-[auto_1fr] gap-x-6">
@@ -95,9 +95,22 @@ export function Software() {
                 className="absolute -translate-x-1/2 -translate-y-1/2"
                 style={{ left: `${n.x}%`, top: `${n.y}%` }}
               >
-                <div className="flex items-center gap-2 rounded-lg border border-line bg-bg-secondary px-3 py-2 backdrop-blur transition-colors hover:border-line-strong">
-                  <span className={cn("h-1.5 w-1.5 rounded-full", a.bg)} />
-                  <span className="whitespace-nowrap font-mono text-[11px] text-text">
+                <div
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg border bg-bg-secondary px-3 py-2 backdrop-blur transition-colors hover:border-line-strong",
+                    n.planned ? "border-dashed border-line-strong" : "border-line",
+                  )}
+                >
+                  <span
+                    className={cn("h-1.5 w-1.5 rounded-full", a.bg)}
+                    style={n.planned ? { opacity: 0.5 } : undefined}
+                  />
+                  <span
+                    className={cn(
+                      "whitespace-nowrap font-mono text-[11px]",
+                      n.planned ? "text-text-dim" : "text-text",
+                    )}
+                  >
                     {n.label}
                   </span>
                 </div>

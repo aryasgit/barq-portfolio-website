@@ -37,16 +37,16 @@ export function PoseInfoPanel() {
           <p className="mt-1 text-xs leading-relaxed text-text-dim">{def.info.description}</p>
 
           <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line">
-            <Metric label="Joints" value={<CountUp value={Object.keys(def.pose).length} />} />
-            <Metric label="Stability" value={<><CountUp value={def.info.stability} />%</>} />
-            <Metric label="Est. draw" value={<><CountUp value={def.info.energy} /> W</>} />
+            <Metric label="Joints set" value={<CountUp value={Object.keys(def.pose).length} />} />
+            <Metric label="Total DOF" value={<CountUp value={12} />} />
+            <Metric label="Legs" value={<CountUp value={4} />} />
             <Metric label="Settle" value={<><CountUp value={def.duration ?? 0.8} decimals={1} /> s</>} />
           </dl>
 
           <div className="mt-4 space-y-2 font-mono text-[10px] uppercase tracking-widest">
             <Row k="Purpose" v={def.info.purpose} />
-            <Row k="Terrain" v={def.info.terrain} />
             <Row k="C.O.G." v={def.info.cog} />
+            <Row k="Control" v="Inverse kinematics" />
           </div>
         </motion.aside>
       )}

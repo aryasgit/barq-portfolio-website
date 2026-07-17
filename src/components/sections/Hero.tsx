@@ -35,9 +35,9 @@ export function Hero() {
           animate={anim}
           className="hidden text-right md:block"
         >
-          12 DOF · 3.6 kg
+          12 DOF · 4 legs
           <br />
-          BLDC direct-drive
+          Custom-built platform
         </motion.span>
       </div>
 
@@ -70,9 +70,9 @@ export function Hero() {
           animate={anim}
           className="mt-6 max-w-md text-balance text-sm leading-relaxed text-text-dim md:text-base"
         >
-          BARQ is a custom-built legged robot — an interactive teardown of its
-          kinematics, actuation and control stack. Engineering motion, from
-          servo to gait.
+          A custom quadruped, engineered from scratch — mechanical design,
+          electronics, kinematics and software. Not a kit, not a commercial
+          robot: a complete end-to-end robotics project.
         </motion.p>
       </div>
 

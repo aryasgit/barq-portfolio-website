@@ -14,9 +14,11 @@ import { StorySection } from "@/components/sections/StorySection";
 import { Exploded } from "@/components/sections/Exploded";
 import { Blueprint } from "@/components/sections/Blueprint";
 import { Lab } from "@/components/sections/Lab";
-import { Performance } from "@/components/sections/Performance";
+import { Pipeline } from "@/components/sections/Pipeline";
+import { Highlights } from "@/components/sections/Highlights";
 import { Hardware } from "@/components/sections/Hardware";
 import { Software } from "@/components/sections/Software";
+import { Capabilities } from "@/components/sections/Capabilities";
 import { Footer } from "@/components/layout/Footer";
 
 // The WebGL scene is client-only; never render it on the server.
@@ -51,12 +53,12 @@ export function Experience() {
           eyebrow="Kinematics"
           accent="cyan"
           title={<>Twelve degrees of freedom.</>}
-          body="Four identical legs, each a three-joint serial chain — hip abduction, knee and ankle. Every link is described in a single URDF that the browser assembles in real time, joint limits and all."
+          body="Four legs, each a three-joint serial chain — hip (coxa), upper leg (femur) and lower leg (tibia). The whole mechanical hierarchy lives in a single URDF that the browser assembles in real time, joint limits and all — the same file that drives simulation."
           stats={[
             { label: "Legs", value: "4" },
             { label: "Joints / leg", value: "3" },
             { label: "Total DOF", value: "12" },
-            { label: "Encoders", value: "14-bit" },
+            { label: "CAD", value: "Fusion 360" },
           ]}
         />
 
@@ -67,40 +69,42 @@ export function Experience() {
           align="right"
           title={
             <>
-              Direct-drive
+              Twelve joints,
               <br />
-              torque.
+              one control path.
             </>
           }
-          body="Each joint is a BLDC actuator with a planetary reduction and magnetic absolute encoder — 10 N·m of peak torque and 5.24 rad/s of travel, enough for dynamic gaits and hard landings."
+          body="Each joint is a DS3240MG high-torque digital servo, driven over PWM through a PCA9685 controller. A calibration pipeline and joint-level software abstraction mean every servo is commanded the same way — pose and gait targets, not raw pulses."
           stats={[
-            { label: "Peak torque", value: "10 N·m" },
-            { label: "Max vel", value: "5.24 rad/s" },
-            { label: "Range", value: "±90°" },
-            { label: "Damping", value: "0.05" },
+            { label: "Servos", value: "12 × DS3240MG" },
+            { label: "Driver", value: "PCA9685" },
+            { label: "Signal", value: "PWM" },
+            { label: "Hip range", value: "±45°" },
           ]}
         />
 
         <StorySection
           index={3}
-          eyebrow="Chassis"
+          eyebrow="Structure"
           accent="pink"
-          title={<>A monocoque brain-case.</>}
-          body="The central shell carries the compute, IMU and power distribution inside a rib-stiffened monocoque — 0.95 kg of structure tuned for torsional stiffness and a low, stable centre of mass."
+          title={<>Designed to be iterated.</>}
+          body="Every structural component was modelled in Fusion 360 and optimised for 3D printing, modularity and ease of maintenance. The central body carries the compute, IMU and power distribution — a platform built to be taken apart and improved."
           stats={[
-            { label: "Body mass", value: "0.95 kg" },
-            { label: "Footprint", value: "258 mm" },
-            { label: "Material", value: "PA12" },
-            { label: "IMU", value: "6-axis" },
+            { label: "Structure", value: "3D-printed" },
+            { label: "CAD", value: "Fusion 360" },
+            { label: "Legs", value: "Modular" },
+            { label: "Source", value: "URDF" },
           ]}
         />
 
         <Exploded />
         <Blueprint />
         <Lab />
-        <Performance />
+        <Pipeline />
+        <Highlights />
         <Hardware />
         <Software />
+        <Capabilities />
         <Footer />
       </main>
     </SmoothScroll>

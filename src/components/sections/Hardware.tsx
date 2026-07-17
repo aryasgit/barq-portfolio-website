@@ -20,11 +20,11 @@ export function Hardware() {
       className="relative z-10 min-h-screen w-full bg-bg px-6 py-28 md:px-12"
     >
       <SectionHeading
-        index="08"
+        index="09"
         eyebrow="Hardware"
         accent="cyan"
-        title={<>Every subsystem, engineered.</>}
-        sub="Compute, actuation, sensing and power — a tightly integrated stack packed into a 3.6 kg frame."
+        title={<>Every subsystem, integrated.</>}
+        sub="Compute, actuation, power and sensing — real components wired together on a custom platform. 'Integrated' runs today; 'Ready' is on-board with its software still in development."
       />
 
       <div className="mx-auto mt-14 grid max-w-6xl auto-rows-[minmax(140px,auto)] grid-cols-1 gap-4 md:grid-cols-4">
@@ -50,7 +50,16 @@ export function Hardware() {
                     >
                       {card.title}
                     </span>
-                    <span className={cn("h-2 w-2 rounded-full", a.bg)} />
+                    <span
+                      className={cn(
+                        "rounded border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-widest",
+                        card.status === "integrated"
+                          ? "border-line-strong text-text-dim"
+                          : "border-dashed border-line-strong text-text-faint",
+                      )}
+                    >
+                      {card.status === "integrated" ? "Integrated" : "Ready"}
+                    </span>
                   </div>
                   <div>
                     <p className="font-display text-2xl font-medium tracking-tight text-text md:text-3xl">

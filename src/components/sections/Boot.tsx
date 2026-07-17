@@ -6,12 +6,12 @@ import { useApp } from "@/lib/store";
 
 const BOOT_LINES = [
   "SYSTEM INITIALIZING",
-  "servo calibration",
-  "imu ready",
-  "vision online",
+  "servo calibration · 12 joints",
+  "PCA9685 driver connected",
+  "HW-290 imu ready",
   "kinematics loaded",
-  "motor controllers connected",
   "power distribution online",
+  "URDF model loaded",
 ];
 
 /**
