@@ -56,4 +56,21 @@ npm run dev      # http://localhost:3000
 npm run build    # production build
 ```
 
+## Deploy to Vercel
+
+This repo is the app root, so Vercel auto-detects Next.js with **zero
+configuration** — no build settings, no env vars required.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/krishagarwal175/BARQ-portfolio)
+
+Or manually:
+
+1. Go to [vercel.com/new](https://vercel.com/new) and **Import** the
+   `krishagarwal175/BARQ-portfolio` repository.
+2. Framework preset: **Next.js** (detected automatically). Root directory: `./`.
+3. Click **Deploy** — Vercel runs `next build` and serves the static output,
+   including the URDF and Collada meshes under `public/robot/`.
+
+Every push to `main` triggers an automatic production redeploy.
+
 Author: **Krish Agarwal**
