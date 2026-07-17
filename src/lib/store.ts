@@ -9,7 +9,7 @@ export type EnvId =
   | "concrete"
   | "grass"
   | "warehouse"
-  | "wireframe"
+  | "research"
   | "blueprint"
   | "night";
 

@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import { Box3, Group, Vector3 } from "three";
 import { useUrdf } from "@/hooks/useUrdf";
 import { RobotDriver } from "@/lib/robot-driver";
+import { applyRobotMaterials } from "@/lib/robot-materials";
 import { useApp } from "@/lib/store";
 import { damp } from "@/lib/utils";
 import type { URDFRobotLike } from "@/types/robot";
@@ -37,6 +38,10 @@ export function Robot({ onReady }: RobotProps) {
 
   useEffect(() => {
     if (!robot || !outer.current || !inner.current) return;
+    // Swap the imported CAD materials for the PBR finish before anything else
+    // captures or clones them (teardown glow, environment material modes).
+    applyRobotMaterials(robot);
+
     // Measure the assembled robot and normalise: centre X/Z on the world axis,
     // rest the feet exactly on y=0. Everything downstream frames this origin.
     const box = new Box3().setFromObject(outer.current);
