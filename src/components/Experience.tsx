@@ -3,8 +3,10 @@
 import dynamic from "next/dynamic";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { Nav } from "@/components/layout/Nav";
+import { AudioController } from "@/components/layout/AudioController";
 import { Cursor } from "@/components/ui/Cursor";
 import { Grain } from "@/components/ui/Grain";
+import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { Boot } from "@/components/sections/Boot";
 import { Hero } from "@/components/sections/Hero";
 import { StorySection } from "@/components/sections/StorySection";
@@ -34,7 +36,9 @@ export function Experience() {
 
       <Grain />
       <Cursor />
+      <ScrollProgress />
       <Nav />
+      <AudioController />
       <Boot />
 
       <main className="relative z-10">
