@@ -1,11 +1,14 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { AdaptiveDpr, OrbitControls, Preload } from "@react-three/drei";
 import { ACESFilmicToneMapping } from "three";
+import type { ComponentRef } from "react";
 import { CameraRig } from "./CameraRig";
 import { Effects } from "./Effects";
+import { EnvController } from "./EnvController";
+import { Ground } from "./Ground";
 import { Lighting } from "./Lighting";
 import { Particles } from "./Particles";
 import { Robot } from "./Robot";
@@ -13,14 +16,30 @@ import { useApp } from "@/lib/store";
 
 function LabControls() {
   const labActive = useApp((s) => s.labActive);
+  const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
+
+  // Frame the whole robot each time the lab opens, resetting the orbit state.
+  useEffect(() => {
+    if (!labActive) return;
+    const id = requestAnimationFrame(() => {
+      const c = controls.current;
+      if (!c) return;
+      c.object.position.set(0.62, 0.26, 0.72);
+      c.target.set(0, 0.16, 0);
+      c.update();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [labActive]);
+
   if (!labActive) return null;
   return (
     <OrbitControls
+      ref={controls}
       makeDefault
-      target={[0, 0.14, 0]}
+      target={[0, 0.12, 0]}
       enablePan={false}
       minDistance={0.4}
-      maxDistance={2.5}
+      maxDistance={2.2}
       minPolarAngle={0.2}
       maxPolarAngle={Math.PI / 2 - 0.05}
       enableDamping
@@ -51,7 +70,9 @@ export function Scene() {
     >
       <Suspense fallback={null}>
         <Lighting />
+        <EnvController />
         <Robot />
+        <Ground />
         <Particles />
         <CameraRig />
         <LabControls />

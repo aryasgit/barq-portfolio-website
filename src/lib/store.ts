@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import type { URDFRobotLike } from "@/types/robot";
 
 export type EnvId =
   | "studio"
@@ -13,7 +14,8 @@ export type EnvId =
 
 export type MotionMode =
   | { kind: "pose"; id: string }
-  | { kind: "gait"; id: string; turn: -1 | 0 | 1 };
+  | { kind: "gait"; id: string; turn: -1 | 0 | 1 }
+  | { kind: "demo"; id: "wave" | "balance" };
 
 interface AppState {
   /* Loading */
@@ -21,6 +23,10 @@ interface AppState {
   progress: number;
   setProgress: (p: number) => void;
   setReady: (r: boolean) => void;
+
+  /* The live robot instance, published once fully loaded. */
+  robot: URDFRobotLike | null;
+  setRobot: (r: URDFRobotLike | null) => void;
 
   /* Boot / intro */
   booted: boolean;
@@ -59,6 +65,9 @@ export const useApp = create<AppState>((set) => ({
   progress: 0,
   setProgress: (p) => set({ progress: p }),
   setReady: (r) => set({ ready: r }),
+
+  robot: null,
+  setRobot: (r) => set({ robot: r }),
 
   booted: false,
   setBooted: (b) => set({ booted: b }),

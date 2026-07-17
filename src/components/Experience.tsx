@@ -8,6 +8,7 @@ import { Grain } from "@/components/ui/Grain";
 import { Boot } from "@/components/sections/Boot";
 import { Hero } from "@/components/sections/Hero";
 import { StorySection } from "@/components/sections/StorySection";
+import { Lab } from "@/components/sections/Lab";
 
 // The WebGL scene is client-only; never render it on the server.
 const Scene = dynamic(() => import("@/components/canvas/Scene").then((m) => m.Scene), {
@@ -82,8 +83,10 @@ export function Experience() {
           ]}
         />
 
+        <Lab />
+
         {/* Spacer to let the camera settle before the next milestones. */}
-        <section className="flex h-[60svh] items-center justify-center">
+        <section className="flex h-[40svh] items-center justify-center">
           <p className="font-mono text-xs uppercase tracking-[0.4em] text-text-faint">
             More systems coming online…
           </p>

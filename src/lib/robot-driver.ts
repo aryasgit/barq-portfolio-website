@@ -51,6 +51,10 @@ export class RobotDriver {
     if (mode.kind === "pose") {
       this.applyPose(mode.id);
       this.driveIdle(elapsed);
+    } else if (mode.kind === "demo") {
+      this.applyPose("stand");
+      if (mode.id === "wave") this.driveWave(elapsed);
+      else this.driveBalance(elapsed);
     } else {
       this.driveGait(dt, mode, speed);
     }
@@ -79,6 +83,36 @@ export class RobotDriver {
       this.target[`${leg}_hip_joint`] = sway * (leg.endsWith("L") ? 1 : -1) + shift * 0.4;
     });
     this.targetBodyY = breathe * 0.4;
+  }
+
+  /** Wave: shift weight to three legs and raise + oscillate the front-left. */
+  private driveWave(t: number) {
+    // Load the rear and front-right to free the front-left.
+    this.target.RL_knee_joint = 0.95;
+    this.target.RR_knee_joint = 0.95;
+    this.target.RL_ankle_joint = -1.35;
+    this.target.RR_ankle_joint = -1.35;
+    this.target.FR_knee_joint = 0.85;
+    this.target.FR_ankle_joint = -1.2;
+    // The waving limb.
+    this.target.FL_knee_joint = -0.4 + Math.sin(t * 6) * 0.15;
+    this.target.FL_ankle_joint = 0.4 + Math.sin(t * 6 + 0.6) * 0.5;
+    this.target.FL_hip_joint = 0.25 + Math.sin(t * 3) * 0.12;
+    this.targetBodyY = -0.02;
+  }
+
+  /** Balance demo: exaggerated body sway with compensating leg corrections. */
+  private driveBalance(t: number) {
+    const roll = Math.sin(t * 1.4) * 0.22;
+    const pitch = Math.sin(t * 1.1 + 1) * 0.12;
+    LEGS.forEach((leg) => {
+      const side = leg.endsWith("L") ? 1 : -1;
+      const front = leg.startsWith("F") ? 1 : -1;
+      this.target[`${leg}_hip_joint`] = roll * side;
+      this.target[`${leg}_knee_joint`] = STAND_KNEE + pitch * front + roll * side * 0.1;
+      this.target[`${leg}_ankle_joint`] = STAND_ANKLE - pitch * front * 0.8;
+    });
+    this.targetBodyY = Math.sin(t * 1.4) * 0.008;
   }
 
   /** Cyclic locomotion. Turn biases the hip abduction left/right. */

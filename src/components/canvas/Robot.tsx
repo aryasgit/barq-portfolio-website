@@ -20,6 +20,7 @@ export function Robot({ onReady }: RobotProps) {
   const outer = useRef<Group>(null);
   const setProgress = useApp((s) => s.setProgress);
   const setReady = useApp((s) => s.setReady);
+  const setRobot = useApp((s) => s.setRobot);
 
   const { robot, progress } = useUrdf();
   const dropY = useRef(0);
@@ -38,9 +39,10 @@ export function Robot({ onReady }: RobotProps) {
     outer.current.position.y = -min;
 
     driver.current = new RobotDriver(robot, -min);
+    setRobot(robot);
     setReady(true);
     onReady?.(robot);
-  }, [robot, onReady, setReady]);
+  }, [robot, onReady, setReady, setRobot]);
 
   useFrame((_, delta) => {
     if (!driver.current || !outer.current) return;
