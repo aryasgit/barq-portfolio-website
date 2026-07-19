@@ -13,12 +13,17 @@ import { useApp } from "@/lib/store";
  * wrong in a way that only showed up against this background: the ambient
  * ember field is bright orange, so the *sky* registered as the hottest thing
  * in frame and the robot had nothing to contrast against. An IR sensor does
- * not work that way — background is background, near-uniform and cold.
+ * not work that way — what the background looks like in visible light says
+ * nothing about its temperature.
  *
  * So the pass samples depth. Anything at the far plane is scene background and
- * is forced to the cold end of the ramp regardless of how bright it looked;
- * only real geometry radiates. That single change is what makes the image read
- * as a sensor rather than a colour filter.
+ * is given a temperature of its own rather than one inherited from its colour;
+ * only real geometry radiates from the image. That separation is what makes
+ * the result read as a sensor rather than a colour filter.
+ *
+ * The background is then imaged as a *room* — see `room()` — because a real IR
+ * frame never returns a void. Above it rises a convection plume off the
+ * chassis, which is the only thing in the frame that moves on its own.
  *
  * Heat on the robot is not uniform either. It is dominated by a Gaussian core
  * centred on the chassis — where the compute, power distribution and IMU sit —
@@ -50,6 +55,52 @@ const FRAGMENT = /* glsl */ `
     return mix(c3, c4, (t - 0.78) / 0.22);
   }
 
+  /**
+   * The room the machine is being imaged in.
+   *
+   * Forcing the background to a flat cold value was right in principle — an IR
+   * sensor must not read the ember sky as the hottest thing in frame — but it
+   * left the robot floating in a void, and a real thermal frame never looks
+   * like that. Every surface in a room holds some temperature, so the sensor
+   * always returns structure: a bench that has soaked up heat, a wall that is
+   * cooler the further it is from anything working, the uneven pooling of a
+   * space that has been running a while.
+   *
+   * All analytic — no texture, no noise lookup. That keeps it cheap, and more
+   * importantly keeps it smooth: a sampled field at this scale is exactly what
+   * made the background grainy before.
+   */
+  float room(vec2 uv) {
+    // The bench the robot works over. Below the horizon is a surface that has
+    // been absorbing heat, above it is wall falling away into the cold.
+    float above = smoothstep(0.300, 0.345, uv.y);
+    float bench = 0.150 - (0.30 - uv.y) * 0.10;
+    float wall  = 0.078 + (1.0 - uv.y) * 0.030;
+    float t = mix(bench, wall, above);
+
+    // Thermal mass on the wall — broad, low-frequency lobes. A room warms
+    // unevenly, and these are what stop the upper half reading as flat paper.
+    vec2 a = (uv - vec2(0.18, 0.74)) * vec2(1.0, 1.6);
+    vec2 b = (uv - vec2(0.86, 0.58)) * vec2(1.0, 1.4);
+    vec2 c = (uv - vec2(0.52, 0.90)) * vec2(1.0, 2.2);
+    t += 0.034 * exp(-dot(a, a) * 7.0) * above;
+    t += 0.026 * exp(-dot(b, b) * 11.0) * above;
+    t -= 0.018 * exp(-dot(c, c) * 9.0) * above;
+
+    // Faint regular structure — racking, panelling, the built edges of a lab.
+    // Held very low contrast on purpose: it should register as "the sensor is
+    // resolving a real surface", not as a pattern anyone is meant to look at.
+    float slots = smoothstep(0.42, 0.58, abs(fract(uv.x * 26.0) - 0.5) * 2.0);
+    float rows  = smoothstep(0.30, 0.70, abs(fract(uv.y * 15.0) - 0.5) * 2.0);
+    t -= slots * rows * 0.020 * above;
+
+    // The far corners of any frame are the coldest thing the sensor sees.
+    vec2 v = uv - 0.5;
+    t -= dot(v, v) * 0.075;
+
+    return t;
+  }
+
   void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth, out vec4 outputColor) {
     // Depth is 1.0 at the far plane. The ambient field and the wordmark are
     // drawn with depthWrite off, so only the robot and the lab pad register.
@@ -66,9 +117,24 @@ const FRAGMENT = /* glsl */ `
     float core = exp(-r2 * 30.0);
     float halo = exp(-r2 * 6.0);
 
-    // Background: cold and near-uniform, with only a faint thermal bloom
-    // around the machine. Explicitly NOT derived from scene luminance.
-    float ambient = 0.055 + 0.035 * (1.0 - uv.y) + halo * 0.16 * uCore;
+    // Background: the imaged room, plus the machine's own thermal bloom.
+    // Explicitly NOT derived from scene luminance.
+    float ambient = room(uv) + halo * 0.16 * uCore;
+
+    // Convection plume. Twelve servos under load dump their heat into the air
+    // above the chassis, and that column is the single clearest tell that this
+    // is a live sensor and not a colour grade — it is the one part of the frame
+    // that moves on its own. Narrow at the source, widening and cooling as it
+    // rises, with a slow lateral wander so it drifts rather than pulses.
+    float up = d.y;
+    if (up > 0.0) {
+      float width = 0.020 + up * 0.16;
+      float wander = sin(up * 9.0 - uTime * 0.9) * 0.014
+                   + sin(up * 21.0 - uTime * 1.7) * 0.006;
+      float column = exp(-pow((d.x - wander) / width, 2.0));
+      // Fades with height as the plume mixes into room air.
+      ambient += column * exp(-up * 4.2) * 0.30 * uCore;
+    }
 
     // Geometry: a floor of radiated heat, the emissive signature the robot
     // materials carry, and the dominant core falling off from the chassis.
