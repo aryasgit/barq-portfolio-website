@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Box3, PerspectiveCamera, Sphere, Vector3 } from "three";
+import { Box3, Matrix4, PerspectiveCamera, Sphere, Vector3 } from "three";
 import { CAM_FRAMES, REVEAL_SHIFT, orbitDir } from "@/lib/camera-keyframes";
 import { SpringScalar, SpringVec3 } from "@/lib/spring";
 import { useApp } from "@/lib/store";
@@ -73,6 +73,23 @@ export function CameraRig() {
    * timed, so the reveal is something the reader performs instead of watches.
    */
   const revealBox = useRef(new Box3());
+  /**
+   * The chassis bounds, captured once in the robot's own local frame.
+   *
+   * These bounds set both where the opening shot aims and how far back it
+   * sits, and measuring them live made the shot a function of the current
+   * pose: the lab lets the reader change stance, and since this is the bounds
+   * of the whole base_link subtree — legs included — a different stance is a
+   * different box. Scrolling back to the top after visiting the lab therefore
+   * re-framed the opening against the new pose instead of returning to the one
+   * the numbers were dialled against.
+   *
+   * Captured in local space and pushed back through the group's world matrix
+   * each frame, so the shot still tracks the chassis as the body banks and
+   * lifts, but no longer moves when a joint does.
+   */
+  const revealLocal = useRef<Box3 | null>(null);
+  const revealSettle = useRef(0);
   const markPos = useRef(new Vector3());
   const revealDir = useRef(new Vector3());
   const revealPos = useRef(new Vector3());
@@ -83,6 +100,7 @@ export function CameraRig() {
   /** True while the lab or debug rig owns the camera, so the return can reseed. */
   const parked = useRef(false);
   const resume = useRef(new Vector3());
+  const inverse = useRef(new Matrix4());
 
   const posSpring = useRef<SpringVec3 | null>(null);
   const tgtSpring = useRef<SpringVec3 | null>(null);
@@ -171,7 +189,25 @@ export function CameraRig() {
     if (reveal.current < 0.999) {
       const base = useApp.getState().robot?.links?.["base_link"];
       if (base) {
-        revealBox.current.setFromObject(base);
+        if (!revealLocal.current) {
+          // Let the driver settle into its rest stance before measuring —
+          // capturing on the very first frame would freeze the URDF's zero
+          // pose, which is not the stance the shot was composed against.
+          revealSettle.current += dt;
+          if (revealSettle.current > 0.5) {
+            revealBox.current.setFromObject(base);
+            if (!revealBox.current.isEmpty()) {
+              revealLocal.current = revealBox.current
+                .clone()
+                .applyMatrix4(inverse.current.copy(robotGroup.matrixWorld).invert());
+            }
+          }
+        }
+        if (revealLocal.current) {
+          revealBox.current.copy(revealLocal.current).applyMatrix4(robotGroup.matrixWorld);
+        } else {
+          revealBox.current.setFromObject(base);
+        }
         if (!revealBox.current.isEmpty()) {
           // The engraving is baked into the chassis mesh rather than being its
           // own node, so it is located geometrically: the bottom face of the
@@ -256,6 +292,7 @@ export function CameraRig() {
     cam.far = actualDist + sphere.current.radius * 8;
     cam.updateProjectionMatrix();
     camera.lookAt(tgtSpring.current!.value);
+
   });
 
   return null;
