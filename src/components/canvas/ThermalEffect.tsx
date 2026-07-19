@@ -5,6 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Effect, EffectAttribute } from "postprocessing";
 import { Uniform, Vector2, Vector3 } from "three";
 import { useApp } from "@/lib/store";
+import { damp } from "@/lib/utils";
 
 /**
  * A thermal-camera pass.
@@ -113,8 +114,10 @@ const FRAGMENT = /* glsl */ `
     float r2 = dot(d, d);
 
     // The body's hot core, and the much weaker halo it radiates into the air
-    // around it.
-    float core = exp(-r2 * 30.0);
+    // around it. The core is deliberately tight: the heat sources are the
+    // compute stack and power distribution in the middle of the chassis, so
+    // anything much wider than the body itself is not physical.
+    float core = exp(-r2 * 52.0);
     float halo = exp(-r2 * 6.0);
 
     // Background: the imaged room, plus the machine's own thermal bloom.
@@ -136,10 +139,30 @@ const FRAGMENT = /* glsl */ `
       ambient += column * exp(-up * 4.2) * 0.30 * uCore;
     }
 
-    // Geometry: a floor of radiated heat, the emissive signature the robot
-    // materials carry, and the dominant core falling off from the chassis.
+    // Geometry, calibrated against the scale printed beside the section. The
+    // ramp breakpoints ARE the legend stops — T_IDLE is where the violet band
+    // starts, T_NOMINAL the magenta, T_LOAD the orange — so a reading taken off
+    // the image can be checked against the label, which is the whole point of
+    // showing a scale at all.
+    //
+    // The machine is idling, so that is what the great majority of it reports:
+    // limbs, shells and feet sit at the bottom of the scale. Only the middle of
+    // the chassis climbs, and only to between nominal and load, because that is
+    // where the compute and power electronics are. The previous floor of 0.30
+    // plus a large luminance term pushed the entire robot up into the magenta,
+    // which read as a machine in thermal distress from head to toe.
+    float T_IDLE    = 0.28;
+    float T_NOMINAL = 0.52;
+    float T_LOAD    = 0.78;
+
     float lum = dot(inputColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-    float body = 0.30 + pow(lum, 0.9) * 0.42 + core * 0.62 * uCore + halo * 0.16;
+    // Luminance only modulates within the idle band — it carries material and
+    // shading variation so the body is not a flat colour, and nothing more.
+    float body = T_IDLE - 0.025 + pow(lum, 0.9) * 0.075;
+    // The chassis core, landing between nominal and load at full strength.
+    body += core * (mix(T_NOMINAL, T_LOAD, 0.45) - T_IDLE) * uCore;
+    // Conducted spill out of the core — how heat actually leaves a hot part.
+    body += halo * 0.045 * uCore;
 
     float heat = mix(ambient, body, isGeometry);
 
@@ -183,7 +206,18 @@ export const ThermalEffect = forwardRef<ThermalImpl, Record<string, never>>(
       // changes every scroll tick, and subscribing would re-render the whole
       // effect chain each time.
       const { thermal, robotGroup } = useApp.getState();
-      u.get("uAmount")!.value = thermal;
+      // Eased toward the target rather than assigned. Scroll snapping moves the
+      // page in one throw, so the raw value can step a long way between frames
+      // — and a hard step in this uniform is a whole-screen colour cut. Damping
+      // it means every entry and exit is a dissolve no matter how the section
+      // was reached, which is what was making the hand-off into the lab jar.
+      const eased = damp(
+        u.get("uAmount")!.value as number,
+        thermal,
+        6,
+        Math.min(delta, 0.05),
+      );
+      u.get("uAmount")!.value = eased;
       u.get("uTime")!.value = (u.get("uTime")!.value as number) + Math.min(delta, 0.05);
       u.get("uAspect")!.value = size.width / size.height;
 
