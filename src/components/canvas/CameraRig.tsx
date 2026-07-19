@@ -80,13 +80,20 @@ export function CameraRig() {
   const reveal = useRef(0);
   const revealFov = useRef<number | null>(null);
 
+  /** True while the lab or debug rig owns the camera, so the return can reseed. */
+  const parked = useRef(false);
+  const resume = useRef(new Vector3());
+
   const posSpring = useRef<SpringVec3 | null>(null);
   const tgtSpring = useRef<SpringVec3 | null>(null);
   const fovSpring = useRef<SpringScalar | null>(null);
 
   useFrame((state, delta) => {
     const app = useApp.getState();
-    if (app.labActive || app.debug) return;
+    if (app.labActive || app.debug) {
+      parked.current = true;
+      return;
+    }
     const { section, robotGroup, dodge, scrollVel, orbitAz, orbitEl } = useApp.getState();
     if (!robotGroup) return;
 
@@ -211,6 +218,23 @@ export function CameraRig() {
       tgtSpring.current = new SpringVec3(target.current);
       fovSpring.current = new SpringScalar(frame.fov);
       camera.position.copy(desired.current);
+    }
+
+    // Coming back from the lab (or from debug), the springs still hold the pose
+    // from before the hand-over, while the camera is wherever the lab left it.
+    // Stepping from those stale values copies the old position straight onto
+    // the camera on the very first frame back — the same cut as the entry, just
+    // in the other direction. Re-seeding from the live camera means the spring
+    // travels *from* the lab pose and the return is as flown as the arrival.
+    if (parked.current) {
+      parked.current = false;
+      posSpring.current.set(camera.position);
+      resume.current
+        .set(0, 0, -1)
+        .applyQuaternion(camera.quaternion)
+        .multiplyScalar(camera.position.distanceTo(target.current))
+        .add(camera.position);
+      tgtSpring.current!.set(resume.current);
     }
 
     const omega = 7;
